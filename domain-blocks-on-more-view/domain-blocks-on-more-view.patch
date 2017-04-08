@@ -1,0 +1,43 @@
+diff --git a/app/controllers/about_controller.rb b/app/controllers/about_controller.rb
+index 7fd43489..2ca10681 100644
+--- a/app/controllers/about_controller.rb
++++ b/app/controllers/about_controller.rb
+@@ -20,6 +20,7 @@ class AboutController < ApplicationController
+     @user_count           = Rails.cache.fetch('user_count')            { User.count }
+     @status_count         = Rails.cache.fetch('local_status_count')    { Status.local.count }
+     @domain_count         = Rails.cache.fetch('distinct_domain_count') { Account.distinct.count(:domain) }
++	@blocks = DomainBlock.paginate(page: params[:page], per_page: 40)
+   end
+ 
+   def terms; end
+diff --git a/app/views/about/more.html.haml b/app/views/about/more.html.haml
+index 2de3bf98..3741011c 100644
+--- a/app/views/about/more.html.haml
++++ b/app/views/about/more.html.haml
+@@ -27,6 +27,26 @@
+       - unless @extended_description.blank?
+         .panel= @extended_description.html_safe
+ 
++      .panel
++        %h3 Domain Blocks
++
++        %p The administrators of this instance have blocked the following domains.
++
++        %table.table
++          %thead
++            %tr
++              %th Domain
++              %th Severity
++          %tbody
++            - @blocks.each do |block|
++              %tr
++                %td
++                  %samp= block.domain
++                %td= block.severity
++
++        = will_paginate @blocks, pagination_options
++
++
+     .sidebar
+       .panel
+         .panel-header= t 'about.contact'
